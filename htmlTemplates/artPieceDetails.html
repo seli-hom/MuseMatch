@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MuseMatch Close Up</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .artwork-preview {
+        max-width: 100%;
+        max-height: 450px;
+        object-fit: contain;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container my-5">
+      <div class="row">
+        <div class="col-md-6 mb-4 text-center">
+          <img
+            id="artwork-img"
+            src="https://via.placeholder.com/400x500?text=Select+an+Art+Piece"
+            alt="Artwork Preview"
+            class="img-fluid artwork-preview"
+          />
+        </div>
+
+        <div class="col-md-6">
+          <div id="description" class="mb-4">
+            <h2 id="art-piece-name">Art Piece Name</h2>
+            <h5 id="artist-name" class="text-muted mb-3">Artist Name</h5>
+            <p id="desc" class="text-secondary">
+              Select a piece from the gallery to view its overview and
+              historical significance here.
+            </p>
+            <p id="price" class="fs-5 fw-bold">
+              Location: <span id="gallery-location">XXX.XXX</span>
+            </p>
+
+            <button type="button" id="detail-btn" class="btn btn-primary mt-2">
+              Request a piece from an artist
+            </button>
+          </div>
+
+          <hr />
+
+          <div id="art-details">
+            <h3>Art Piece Details</h3>
+            <p id="art-details-text">
+              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quae,
+              accusamus, ratione consectetur at, quia inventore eum nobis omnis
+              eveniet nesciunt saepe! Natus cumque alias suscipit totam
+              cupiditate.
+            </p>
+
+            <h3>Artist Details</h3>
+            <p id="artist-details-text">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia
+              eveniet provident fugiat hic impedit aliquam amet iusto quasi,
+              obcaecati, quis consequatur ullam illum.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/dist/js/bootstrap.bundle.min.js"></script> -->
+    <script src="../JS/artWorkDetails.js"></script>
+  </body>
+</html>

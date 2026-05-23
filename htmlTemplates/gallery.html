@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MuseMatch Gallery</title>
+    <link rel="stylesheet" href="../CSS/styles.css" />
+  </head>
+  <body>
+    <!-- Simple Tour Guide HUD Overlay -->
+    <div id="tour-guide-hud">
+      <h2 id="guide-status">Walk up to a painting to hear the guide...</h2>
+      <p id="artwork-info"></p>
+    </div>
+
+    <!-- The Horizontal Hallway -->
+    <div class="gallery-wrapper">
+      <div id="gallery-hallway" class="hallway">
+        <!-- Artworks will be injected here dynamically -->
+      </div>
+    </div>
+            <nav class="mt-2">
+                <ul
+                  class="pagination pagination-sm justify-content-center mb-0"
+                  id="fungiPagination"
+                >
+                  <!-- Rendered dynamically -->
+                </ul>
+              </nav>
+
+    <script src="../JS/app.js"></script>
+  </body>
+</html>

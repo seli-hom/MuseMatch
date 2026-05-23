@@ -1,0 +1,83 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #1a1a1a;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden; /* Hide horizontal scrollbar, we will use page scroll */
+}
+
+/* Fixed HUD at the bottom for the AI Guide */
+#tour-guide-hud {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 600px;
+    background: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid #444;
+    padding: 15px 25px;
+    border-radius: 12px;
+    z-index: 100;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+}
+
+/* Horizontal Scrolling Track */
+.gallery-wrapper {
+    width: 100vw;
+    height: 100vh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: flex;
+    align-items: center;
+    scroll-behavior: smooth;
+}
+
+.hallway {
+    display: flex;
+    padding: 0 10vw; /* Starting and ending buffers */
+    gap: 15vw;       /* Massive spacing between frames to simulate walking */
+    align-items: center;
+}
+
+/* Individual Painting Exhibit Frame */
+.exhibit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.4;
+    transform: scale(0.9);
+    transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Focus state when the user walks directly in front of it */
+.exhibit.active {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.frame {
+    background: #000;
+    padding: 15px;
+    border: 8px solid #3d2a1d; /* Wooden frame look */
+    box-shadow: 0 30px 50px rgba(0,0,0,0.8), 0 0 100px rgba(255,255,255,0.05);
+}
+
+.frame img {
+    height: 50vh; /* Scaled cleanly against viewport height */
+    display: block;
+}
+
+.label-plate {
+    margin-top: 20px;
+    text-align: center;
+    background: #eae9e4;
+    color: #222;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    min-width: 150px;
+}
