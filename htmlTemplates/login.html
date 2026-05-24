@@ -13,7 +13,9 @@
         <p>Sign in to your gallery account</p>
       </div>
 
-      <form action="submit" method="post">
+      <form id="login-form">
+        <div id="auth-error" class="auth-error" style="display:none;"></div>
+
         <div class="form-group">
           <label for="email">Email</label>
           <input type="email" id="email" name="email" placeholder="you@example.com" required />
@@ -37,12 +39,24 @@
       </div>
     </div>
 
+    <script src="../JS/auth.js"></script>
     <script>
-      const showPasswordCheckbox = document.getElementById("showPassword");
-      const passwordField = document.getElementById("password");
+      document.getElementById("showPassword").addEventListener("change", function () {
+        document.getElementById("password").type = this.checked ? "text" : "password";
+      });
 
-      showPasswordCheckbox.addEventListener("change", function () {
-        passwordField.type = this.checked ? "text" : "password";
+      document.getElementById("login-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const result = await Auth.login(email, password);
+        if (result.success) {
+          window.location.href = "gallery.html";
+        } else {
+          const errorEl = document.getElementById("auth-error");
+          errorEl.textContent = result.error;
+          errorEl.style.display = "block";
+        }
       });
     </script>
   </body>

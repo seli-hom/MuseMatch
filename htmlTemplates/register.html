@@ -13,7 +13,8 @@
         <p>Create your gallery account</p>
       </div>
 
-      <form action="#" method="post">
+      <form id="register-form">
+        <div id="auth-error" class="auth-error" style="display:none;"></div>
         <div class="form-group">
           <label for="firstName">First Name</label>
           <input type="text" id="firstName" name="firstName" placeholder="Jane" required />
@@ -44,6 +45,20 @@
           <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" required />
         </div>
 
+        <div class="form-group">
+          <label>I am a…</label>
+          <div class="role-group">
+            <label class="role-option">
+              <input type="radio" name="role" value="viewer" checked />
+              <span>Viewer</span>
+            </label>
+            <label class="role-option">
+              <input type="radio" name="role" value="artist" />
+              <span>Artist</span>
+            </label>
+          </div>
+        </div>
+
         <div class="checkbox-group">
           <input type="checkbox" id="showPassword" />
           <label for="showPassword">Show passwords</label>
@@ -57,15 +72,43 @@
       </div>
     </div>
 
+    <script src="../JS/auth.js"></script>
     <script>
-      const showPasswordCheckbox = document.getElementById("showPassword");
-      const passwordField = document.getElementById("password");
-      const confirmPasswordField = document.getElementById("confirmPassword");
-
-      showPasswordCheckbox.addEventListener("change", function () {
+      document.getElementById("showPassword").addEventListener("change", function () {
         const type = this.checked ? "text" : "password";
-        passwordField.type = type;
-        confirmPasswordField.type = type;
+        document.getElementById("password").type = type;
+        document.getElementById("confirmPassword").type = type;
+      });
+
+      document.getElementById("register-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+        const errorEl = document.getElementById("auth-error");
+
+        if (password !== confirmPassword) {
+          errorEl.textContent = "Passwords do not match.";
+          errorEl.style.display = "block";
+          return;
+        }
+
+        const role = document.querySelector('input[name="role"]:checked').value;
+
+        const result = await Auth.register(
+          document.getElementById("firstName").value,
+          document.getElementById("lastName").value,
+          document.getElementById("email").value,
+          document.getElementById("phone").value,
+          password,
+          role
+        );
+
+        if (result.success) {
+          window.location.href = "login.html";
+        } else {
+          errorEl.textContent = result.error;
+          errorEl.style.display = "block";
+        }
       });
     </script>
   </body>

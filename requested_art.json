@@ -1,0 +1,24 @@
+{
+  "requests": [
+    {
+      "id": "1779624510831",
+      "artwork": {
+        "id": "80607",
+        "title": "Self-Portrait",
+        "artist": "Vincent van Gogh",
+        "imageId": "47c5bcb8-62ef-e5d7-55e7-f5121f409a30"
+      },
+      "viewer": {
+        "firstName": "Karan",
+        "lastName": "Kumar",
+        "email": "karan30375@gmail.com",
+        "phone": "4389698029"
+      },
+      "budget": "300",
+      "status": "pending",
+      "requestedAt": "2026-05-24T12:08:30.831Z",
+      "completedAt": null,
+      "completedImagePath": null
+    }
+  ]
+}

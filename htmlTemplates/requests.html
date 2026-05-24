@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Requests — MuseMatch</title>
+    <link rel="stylesheet" href="../CSS/styles.css" />
+  </head>
+  <body>
+    <nav class="gallery-nav">
+      <a href="gallery.html" class="nav-brand">MuseMatch</a>
+      <div class="nav-actions"></div>
+    </nav>
+
+    <div class="requests-page">
+      <div class="requests-header">
+        <h1>Artwork Requests</h1>
+        <p id="requests-count" class="requests-subtitle"></p>
+      </div>
+
+      <div id="requests-list" class="requests-list">
+        <p class="requests-empty">Loading requests…</p>
+      </div>
+    </div>
+
+    <!-- Mark-as-done modal -->
+    <div id="done-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-card">
+        <button class="modal-close" id="done-modal-close">&#x2715;</button>
+        <h2 class="modal-title">Mark as Done</h2>
+        <p id="done-modal-subtitle" class="modal-subtitle"></p>
+
+        <div id="done-modal-error" class="auth-error" style="display:none;"></div>
+
+        <div class="form-group" style="margin-top:16px;">
+          <label for="done-image">Upload completed artwork photo</label>
+          <input type="file" id="done-image" accept="image/*" class="file-input" />
+        </div>
+
+        <button id="done-submit-btn" class="auth-submit" style="margin-top:12px;">Confirm Done</button>
+      </div>
+    </div>
+
+    <script src="../JS/auth.js"></script>
+    <script>
+      Auth.updateNav();
+
+      // Redirect non-artists away
+      if (!Auth.isArtist()) {
+        window.location.href = "gallery.html";
+      }
+
+      const API = "http://localhost:3000/api";
+      let pendingCompleteId = null;
+
+      async function loadRequests() {
+        const res = await fetch(`${API}/requests`);
+        const requests = await res.json();
+
+        const list = document.getElementById("requests-list");
+        const countEl = document.getElementById("requests-count");
+
+        if (!requests.length) {
+          list.innerHTML = `<p class="requests-empty">No requests yet.</p>`;
+          countEl.textContent = "";
+          return;
+        }
+
+        const pending = requests.filter((r) => r.status === "pending").length;
+        countEl.textContent = `${requests.length} total · ${pending} pending`;
+
+        list.innerHTML = requests
+          .sort((a, b) => new Date(b.requestedAt) - new Date(a.requestedAt))
+          .map((r) => {
+            const thumb = r.artwork.imageId
+              ? `<img src="https://www.artic.edu/iiif/2/${r.artwork.imageId}/full/,200/0/default.jpg" class="request-thumb" alt="${r.artwork.title}" />`
+              : `<div class="request-thumb request-thumb-placeholder">No image</div>`;
+
+            const completedImg = r.completedImagePath
+              ? `<div class="completed-img-wrap"><p class="completed-label">Completed artwork:</p><img src="${r.completedImagePath}" class="completed-img" alt="Completed" /></div>`
+              : "";
+
+            const badge = r.status === "completed"
+              ? `<span class="status-badge badge-done">Done</span>`
+              : `<span class="status-badge badge-pending">Pending</span>`;
+
+            const actionBtn = r.status === "pending"
+              ? `<button class="btn-gallery btn-gallery-solid mark-done-btn" data-id="${r.id}" data-title="${r.artwork.title}">Mark as Done</button>`
+              : "";
+
+            return `
+              <div class="request-card ${r.status === "completed" ? "request-card-done" : ""}">
+                <div class="request-card-left">
+                  ${thumb}
+                </div>
+                <div class="request-card-body">
+                  <div class="request-card-top">
+                    <div>
+                      <h3 class="request-art-title">${r.artwork.title}</h3>
+                      <p class="request-art-artist">by ${r.artwork.artist}</p>
+                    </div>
+                    ${badge}
+                  </div>
+
+                  <div class="request-viewer-info">
+                    <span><strong>Viewer:</strong> ${r.viewer.firstName} ${r.viewer.lastName}</span>
+                    <span><strong>Email:</strong> ${r.viewer.email}</span>
+                    <span><strong>Phone:</strong> ${r.viewer.phone || "—"}</span>
+                    <span><strong>Budget:</strong> $${r.budget}</span>
+                    <span><strong>Requested:</strong> ${new Date(r.requestedAt).toLocaleDateString()}</span>
+                  </div>
+
+                  ${completedImg}
+                  ${actionBtn}
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+
+        document.querySelectorAll(".mark-done-btn").forEach((btn) => {
+          btn.addEventListener("click", () => openDoneModal(btn.dataset.id, btn.dataset.title));
+        });
+      }
+
+      function openDoneModal(id, title) {
+        pendingCompleteId = id;
+        document.getElementById("done-modal-subtitle").textContent = `"${title}"`;
+        document.getElementById("done-modal-error").style.display = "none";
+        document.getElementById("done-image").value = "";
+        document.getElementById("done-modal").style.display = "flex";
+      }
+
+      function closeDoneModal() {
+        document.getElementById("done-modal").style.display = "none";
+        pendingCompleteId = null;
+      }
+
+      document.getElementById("done-modal-close").addEventListener("click", closeDoneModal);
+      document.getElementById("done-modal").addEventListener("click", (e) => {
+        if (e.target === document.getElementById("done-modal")) closeDoneModal();
+      });
+
+      document.getElementById("done-submit-btn").addEventListener("click", async () => {
+        if (!pendingCompleteId) return;
+        const errorEl = document.getElementById("done-modal-error");
+        const fileInput = document.getElementById("done-image");
+
+        const formData = new FormData();
+        if (fileInput.files[0]) formData.append("completedImage", fileInput.files[0]);
+
+        try {
+          const res = await fetch(`${API}/requests/${pendingCompleteId}/complete`, {
+            method: "POST",
+            body: formData,
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            errorEl.textContent = data.error;
+            errorEl.style.display = "block";
+            return;
+          }
+          closeDoneModal();
+          loadRequests();
+        } catch {
+          errorEl.textContent = "Could not connect to the server.";
+          errorEl.style.display = "block";
+        }
+      });
+
+      loadRequests();
+    </script>
+  </body>
+</html>
