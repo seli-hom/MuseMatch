@@ -1,9 +1,12 @@
+require("dotenv").config();
+
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
+const Anthropic = require("@anthropic-ai/sdk");
 
 const app = express();
 const PORT = 3000;
@@ -15,6 +18,7 @@ const UPLOADS_DIR = path.join(__dirname, "uploads");
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
 
 const upload = multer({ dest: UPLOADS_DIR });
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ── JSON helpers ──────────────────────────────────────────────────────────────
 function readUsers() {
@@ -127,6 +131,7 @@ app.post("/api/request", (req, res) => {
         requestedAt: new Date().toISOString(),
         completedAt: null,
         completedImagePath: null,
+        similarityScore: null,
     };
 
     requests.requests.push(newRequest);
@@ -142,7 +147,7 @@ app.get("/api/requests", (req, res) => {
 });
 
 // ── POST /api/requests/:id/complete ──────────────────────────────────────────
-app.post("/api/requests/:id/complete", upload.single("completedImage"), (req, res) => {
+app.post("/api/requests/:id/complete", upload.single("completedImage"), async (req, res) => {
     const { id } = req.params;
     const data = readRequests();
     const request = data.requests.find((r) => r.id === id);
@@ -152,8 +157,57 @@ app.post("/api/requests/:id/complete", upload.single("completedImage"), (req, re
     request.status = "completed";
     request.completedAt = new Date().toISOString();
     request.completedImagePath = req.file ? `/uploads/${req.file.filename}` : null;
-    writeRequests(data);
+    request.similarityScore = null;
 
+    // Compare images with Claude if we have both
+    if (req.file && request.artwork.imageId) {
+        try {
+            const originalUrl = `https://www.artic.edu/iiif/2/${request.artwork.imageId}/full/,600/0/default.jpg`;
+
+            // Fetch original from Art Institute
+            const originalRes = await fetch(originalUrl);
+            if (!originalRes.ok) throw new Error("Could not fetch original image");
+            const originalBuffer = Buffer.from(await originalRes.arrayBuffer());
+            const originalBase64 = originalBuffer.toString("base64");
+
+            // Read uploaded image
+            const uploadedBuffer = fs.readFileSync(req.file.path);
+            const uploadedBase64 = uploadedBuffer.toString("base64");
+            const uploadedMime = req.file.mimetype || "image/jpeg";
+
+            const message = await anthropic.messages.create({
+                model: "claude-opus-4-7",
+                max_tokens: 16,
+                messages: [
+                    {
+                        role: "user",
+                        content: [
+                            {
+                                type: "image",
+                                source: { type: "base64", media_type: "image/jpeg", data: originalBase64 },
+                            },
+                            {
+                                type: "image",
+                                source: { type: "base64", media_type: uploadedMime, data: uploadedBase64 },
+                            },
+                            {
+                                type: "text",
+                                text: "can you compare these 2 images and only give me back ONLY a pourcentage of similarity",
+                            },
+                        ],
+                    },
+                ],
+            });
+
+            const raw = message.content[0]?.text || "";
+            const match = raw.match(/\d+(\.\d+)?/);
+            if (match) request.similarityScore = parseFloat(match[0]);
+        } catch (err) {
+            console.error("Image comparison failed:", err.message);
+        }
+    }
+
+    writeRequests(data);
     res.json({ success: true, request });
 });
 

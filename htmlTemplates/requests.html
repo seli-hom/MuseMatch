@@ -281,6 +281,25 @@
       .badge-pending { color: var(--gold-dim); border-color: var(--gold-dim); }
       .badge-done    { color: var(--success);  border-color: var(--success); }
 
+      .similarity-score {
+        display: block;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.6rem;
+        font-weight: 300;
+        color: var(--gold);
+        letter-spacing: 0.04em;
+        line-height: 1;
+        margin: 6px 0 2px;
+      }
+      .similarity-label {
+        display: block;
+        font-size: 0.55rem;
+        letter-spacing: 0.2em;
+        color: var(--cream-dim);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
       .mark-done-btn {
         display: inline-block;
         padding: 7px 14px;
@@ -557,6 +576,9 @@
                 <span class="plate-viewer">${r.viewer.firstName} ${r.viewer.lastName}</span>
                 <span class="plate-budget">Budget: $${r.budget}</span><br>
                 ${badge}
+                ${isDone && r.similarityScore != null
+                  ? `<span class="similarity-score">${r.similarityScore}%</span><span class="similarity-label">Similarity to original</span>`
+                  : ""}
                 ${actionBtn}
               </div>
             `;
