@@ -1,98 +1,72 @@
-// ── Configuration ──────────────────────────────────────────────────────────
-const SEARCH_URL = "https://api.artic.edu/api/v1/artworks/search";
-const IIIF_BASE  = "https://www.artic.edu/iiif/2";
-const PAGE_SIZE  = 25;
-
-// Total pages to cycle through (loops back around)
-const TOTAL_PAGES = 5;
+const IIIF_BASE = "https://www.artic.edu/iiif/2";
+const API_SEARCH = "https://api.artic.edu/api/v1/artworks/search";
+const ITEMS_PER_PAGE = 10;
 
 let currentPage = 1;
+let totalPages = 1;
 
-// ── Query builder ───────────────────────────────────────────────────────────
-function buildQuery(page) {
-    return {
-        resources: "artworks",
-        fields: ["id", "title", "artist_title", "image_id", "thumbnail",
-                 "description", "place_of_origin", "gallery_title"],
-        limit: PAGE_SIZE,
-        from: (page - 1) * PAGE_SIZE,
+async function loadPage(page) {
+    const hallway = document.getElementById("gallery-hallway");
+    hallway.innerHTML = '<div class="loading-msg">Curating the collection...</div>';
+
+    const queryPayload = {
+        fields: ["id", "title", "artist_title", "image_id", "thumbnail"],
+        limit: ITEMS_PER_PAGE,
+        page,
         query: {
             bool: {
                 must: [
-                    { exists: { field: "image_id" } },
-                    { range: { date_start: { gte: 1870, lte: 1900 } } }
+                    { exists: { field: "image_id" } }
                 ]
             }
         }
     };
-}
-
-// ── Load page ───────────────────────────────────────────────────────────────
-async function loadPage(page) {
-    const hallway = document.getElementById('gallery-hallway');
-    hallway.innerHTML = '<div class="loading-msg">Curating the collection...</div>';
-
-    // Scroll the gallery back to the start on page change
-    document.querySelector('.gallery-wrapper').scrollLeft = 0;
 
     try {
-        const response = await fetch(SEARCH_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(buildQuery(page))
+        const res = await fetch(`${API_SEARCH}?page=${page}&limit=${ITEMS_PER_PAGE}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(queryPayload)
         });
-        const result = await response.json();
-        renderHallway(result.data || []);
-        updatePaginationUI(page);
-    } catch (error) {
-        hallway.innerHTML = '<div class="loading-msg">Could not load gallery. Please try again.</div>';
-        console.error("Failed to gather museum data:", error);
+        const result = await res.json();
+        totalPages = Math.ceil(result.pagination.total / ITEMS_PER_PAGE);
+        currentPage = page;
+        renderHallway(result.data);
+        updatePagination();
+    } catch (err) {
+        console.error("Failed to load artworks:", err);
+        hallway.innerHTML = '<div class="loading-msg">Failed to load collection.</div>';
     }
 }
 
-// ── Render hallway ──────────────────────────────────────────────────────────
 function renderHallway(artworks) {
-    const hallway = document.getElementById('gallery-hallway');
-    hallway.innerHTML = '';
-
-    if (!artworks.length) {
-        hallway.innerHTML = '<div class="loading-msg">No pieces found for this page.</div>';
-        return;
-    }
+    const hallway = document.getElementById("gallery-hallway");
+    hallway.innerHTML = "";
 
     artworks.forEach(art => {
-        const imgUrl = `${IIIF_BASE}/${art.image_id}/full/,500/0/default.jpg`;
+        const imgUrl = `${IIIF_BASE}/${art.image_id}/full/,400/0/default.jpg`;
 
-        const exhibit = document.createElement('div');
-        exhibit.className = 'exhibit';
-        exhibit.dataset.title     = art.title || "Untitled";
-        exhibit.dataset.artist    = art.artist_title || "Unknown Artist";
-        exhibit.dataset.altText   = art.thumbnail?.alt_text || "";
-        exhibit.dataset.id        = art.id;
-        exhibit.dataset.imageId   = art.image_id;
-        exhibit.dataset.desc      = art.description || "";
-        exhibit.dataset.location  = art.gallery_title || "Main Hallway";
+        const exhibit = document.createElement("div");
+        exhibit.className = "exhibit";
+        exhibit.dataset.title = art.title;
+        exhibit.dataset.artist = art.artist_title || "Unknown Artist";
+        exhibit.dataset.altText = art.thumbnail?.alt_text || "";
 
         exhibit.innerHTML = `
             <div class="frame">
-                <img
-                    src="${imgUrl}"
-                    alt="${art.title}"
-                    loading="lazy"
-                    onerror="this.style.background='#1a150a';this.style.minHeight='200px';"
-                />
+                <img src="${imgUrl}" alt="${art.title}" loading="lazy">
             </div>
             <div class="label-plate">
-                <strong>${art.title || "Untitled"}</strong>
+                <strong>${art.title}</strong>
                 <span>${art.artist_title || "Unknown"}</span>
-                <button
-                    class="view-details-btn"
-                    onclick="goToDetails(this.closest('.exhibit'))"
-                >
-                    View Details
-                </button>
+                <button class="view-details-btn">View Details</button>
             </div>
         `;
+
+        exhibit.querySelector(".view-details-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            openDetails(art);
+        });
 
         hallway.appendChild(exhibit);
     });
@@ -100,74 +74,72 @@ function renderHallway(artworks) {
     setupProximityDetection();
 }
 
-// ── Navigate to details page ─────────────────────────────────────────────
-function goToDetails(exhibit) {
-    const payload = {
-        itemID:    exhibit.dataset.id,
-        itemTitle: exhibit.dataset.title,
-        artist:    exhibit.dataset.artist,
-        altText:   exhibit.dataset.altText,
-        image_id:  exhibit.dataset.imageId,
-        description: exhibit.dataset.desc,
-        location:  exhibit.dataset.location
-    };
-    sessionStorage.setItem("selected-item", JSON.stringify(payload));
+function openDetails(art) {
+    sessionStorage.setItem("selected-item", JSON.stringify({
+        itemID: String(art.id || ""),
+        itemTitle: art.title,
+        artist: art.artist_title || "Unknown Artist",
+        image_id: art.image_id || "",
+        altText: art.thumbnail?.alt_text || "",
+        description: art.thumbnail?.alt_text || "No overview available for this piece.",
+        location: "Main Gallery — Late 19th Century",
+    }));
     window.location.href = "artPieceDetails.html";
 }
 
-// ── Proximity detection ──────────────────────────────────────────────────
-function setupProximityDetection() {
-    const exhibits = document.querySelectorAll('.exhibit');
+function updatePagination() {
+    const label = document.getElementById("page-label");
+    const counter = document.getElementById("page-counter");
+    const prevBtn = document.getElementById("prev-page");
+    const nextBtn = document.getElementById("next-page");
 
+    if (label) label.textContent = `Page ${currentPage} of ${totalPages}`;
+    if (counter) counter.textContent = `Gallery · Page ${currentPage}`;
+    if (prevBtn) prevBtn.disabled = currentPage <= 1;
+    if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+}
+
+function setupProximityDetection() {
+    const exhibits = document.querySelectorAll(".exhibit");
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                exhibits.forEach(el => el.classList.remove('active'));
-                entry.target.classList.add('active');
+                exhibits.forEach(el => el.classList.remove("active"));
+                entry.target.classList.add("active");
                 triggerTourGuide(entry.target.dataset);
             }
         });
     }, {
-        root: document.querySelector('.gallery-wrapper'),
-        rootMargin: '0px -35% 0px -35%',
+        root: document.querySelector(".gallery-wrapper"),
+        rootMargin: "0px -35% 0px -35%",
         threshold: 0.5
     });
-
-    exhibits.forEach(exhibit => observer.observe(exhibit));
+    exhibits.forEach(ex => observer.observe(ex));
 }
 
-// ── Tour guide narration ─────────────────────────────────────────────────
 function triggerTourGuide(artData) {
-    document.getElementById('guide-status').innerText =
-        `"${artData.title}"`;
-    document.getElementById('artwork-info').innerText =
-        `By ${artData.artist}`;
+    const status = document.getElementById("guide-status");
+    const info = document.getElementById("artwork-info");
+    if (status) status.textContent = `"${artData.title}"`;
+    if (info) info.textContent = `by ${artData.artist}`;
 
     window.speechSynthesis.cancel();
-    const script = `Here we have ${artData.title}, by ${artData.artist}. ${artData.altText}`;
-    const utterance = new SpeechSynthesisUtterance(script);
+    const utterance = new SpeechSynthesisUtterance(
+        `Here we have ${artData.title}, created by ${artData.artist}. ${artData.altText}`
+    );
     utterance.rate = 0.95;
     window.speechSynthesis.speak(utterance);
 }
 
-// ── Pagination UI ────────────────────────────────────────────────────────
-function updatePaginationUI(page) {
-    document.getElementById('page-label').textContent =
-        `Page ${page} of ${TOTAL_PAGES}`;
-    document.getElementById('page-counter').textContent =
-        `Gallery · Page ${page}`;
-}
+document.addEventListener("DOMContentLoaded", () => {
+    Auth.updateNav();
 
-// Arrow buttons — loop back around
-document.getElementById('prev-page').addEventListener('click', () => {
-    currentPage = currentPage <= 1 ? TOTAL_PAGES : currentPage - 1;
-    loadPage(currentPage);
+    document.getElementById("prev-page")?.addEventListener("click", () => {
+        if (currentPage > 1) loadPage(currentPage - 1);
+    });
+    document.getElementById("next-page")?.addEventListener("click", () => {
+        if (currentPage < totalPages) loadPage(currentPage + 1);
+    });
+
+    loadPage(1);
 });
-
-document.getElementById('next-page').addEventListener('click', () => {
-    currentPage = currentPage >= TOTAL_PAGES ? 1 : currentPage + 1;
-    loadPage(currentPage);
-});
-
-// ── Boot ─────────────────────────────────────────────────────────────────
-window.onload = () => loadPage(1);

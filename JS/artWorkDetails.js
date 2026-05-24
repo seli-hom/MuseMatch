@@ -1,222 +1,226 @@
 import { FetchWrapper } from "./fetchWrapper.js";
 
-// ── Constants ─────────────────────────────────────────────────────────────────
-const IIIF_BASE       = "https://www.artic.edu/iiif/2";
-const ART_API         = "https://api.artic.edu/api/v1";
+const artInstituteAPI = new FetchWrapper("https://api.artic.edu/api/v1");
+const API_BASE = "http://localhost:3000/api";
 
-// !! Update this to match your server setup !!
-const GALLERY_API_BASE = "http://localhost/gallery-api/v1";
+const data = JSON.parse(sessionStorage.getItem("selected-item"));
 
-const artInstituteAPI = new FetchWrapper(ART_API);
+if (!data) {
+    const section = document.getElementById("commission-section");
+    if (section) section.innerHTML = `<p class="form-intro">No artwork selected. <a href="gallery.html" style="color:var(--gold)">Return to gallery</a>.</p>`;
+} else {
+    populateArtwork(data);
+    populateCommissionSection(data);
+}
 
-// ── Main init ─────────────────────────────────────────────────────────────────
-export function initProductDetails() {
+function populateArtwork(data) {
+    const setText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
 
-    // DOM refs
-    const artPieceName      = document.querySelector("#art-piece-name");
-    const artistName        = document.querySelector("#artist-name");
-    const desc              = document.querySelector("#desc");
-    const galleryLocation   = document.querySelector("#gallery-location");
-    const img               = document.querySelector("#artwork-img");
-    const artDetailsText    = document.querySelector("#art-details-text");
-    const artistDetailsText = document.querySelector("#artist-details-text");
-    const commissionBtn     = document.querySelector("#commission-btn");
-    const formStatus        = document.querySelector("#form-status");
+    setText("art-piece-name", data.itemTitle || "Untitled");
+    setText("artist-name", data.artist || "Unknown Artist");
+    setText("desc", data.description || "No overview available for this piece.");
+    setText("gallery-location", data.location || "Main Gallery");
+    setText("art-details-text", data.altText || "Detailed context unavailable for this work.");
 
-    // Pull selected artwork payload dropped by gallery page
-    const data = JSON.parse(sessionStorage.getItem("selected-item"));
-
-    if (!data) {
-        if (artPieceName) artPieceName.textContent = "No artwork selected";
-        if (desc) desc.textContent = "Please return to the gallery and select a piece.";
-        console.warn("No artwork data found in sessionStorage.");
-        return;
+    const img = document.getElementById("artwork-img");
+    if (img) {
+        if (data.image_id) {
+            img.src = `https://www.artic.edu/iiif/2/${data.image_id}/full/843,/0/default.jpg`;
+            img.alt = data.itemTitle;
+        } else if (data.thumbnail) {
+            img.src = data.thumbnail;
+        }
     }
 
-    // ── Populate static fields from sessionStorage payload ────────────────
-    artPieceName.textContent    = data.itemTitle  || "Untitled";
-    artistName.textContent      = data.artist     || "Unknown Artist";
-    desc.textContent            = data.description || "No overview provided for this piece.";
-    galleryLocation.textContent = data.location   || "Main Hallway Display";
-
-    // IIIF image — prefer high-res reconstruction, fallback to thumbnail
-    if (data.image_id) {
-        img.src = `${IIIF_BASE}/${data.image_id}/full/843,/0/default.jpg`;
-        img.alt = data.itemTitle || "Artwork";
-    } else if (data.thumbnail) {
-        img.src = data.thumbnail;
-    }
-
-    // Alt-text into art details panel
-    if (data.altText) {
-        artDetailsText.textContent = data.altText;
-    }
-
-    // ── Enrich artist bio from Art Institute agents endpoint ──────────────
-    if (data.artist) {
-        enrichArtistDetails(data.artist, artistDetailsText);
-    }
-
-    // ── Enrich artwork type from Art Institute artworks endpoint ──────────
-    // (used later when POSTing to requested-pieces)
+    // Fetch richer artist details from the API in the background
     if (data.itemID) {
-        enrichArtworkType(data);
-    }
-
-    // ── Wire commission button ─────────────────────────────────────────────
-    commissionBtn.addEventListener("click", () =>
-        handleCommission(data, formStatus)
-    );
-}
-
-// ── Fetch artist bio ──────────────────────────────────────────────────────────
-async function enrichArtistDetails(artist, targetEl) {
-    try {
-        const res  = await fetch(`${ART_API}/agents/search?q=${encodeURIComponent(artist)}&limit=1`);
-        const json = await res.json();
-        const agent = json.data?.[0];
-        if (agent) {
-            const born = agent.birth_date  ? `b. ${agent.birth_date}` : null;
-            const died = agent.death_date  ? `d. ${agent.death_date}` : null;
-            const dates = [born, died].filter(Boolean).join(", ");
-            targetEl.textContent =
-                agent.description ||
-                `${agent.title || artist}${dates ? " (" + dates + ")" : ""}.`;
-        }
-    } catch (_) {
-        // silently leave placeholder text
+        artInstituteAPI.get(`/artworks/${data.itemID}?fields=artist_display,description`)
+            .then(res => {
+                const el = document.getElementById("artist-details-text");
+                if (el && res.data?.artist_display) el.textContent = res.data.artist_display;
+                const descEl = document.getElementById("desc");
+                if (descEl && res.data?.description) {
+                    const tmp = document.createElement("div");
+                    tmp.innerHTML = res.data.description;
+                    descEl.textContent = tmp.textContent;
+                }
+            })
+            .catch(() => {});
     }
 }
 
-// ── Enrich artwork_type and cache it onto the data object ─────────────────────
-async function enrichArtworkType(data) {
-    try {
-        const res  = await fetch(
-            `${ART_API}/artworks/${data.itemID}?fields=title,artist_title,artwork_type_title`
-        );
-        const json = await res.json();
-        if (json.data) {
-            // Write enriched values back so handleCommission can read them
-            data._enrichedTitle  = json.data.title              || data.itemTitle;
-            data._enrichedArtist = json.data.artist_title       || data.artist;
-            data._enrichedType   = json.data.artwork_type_title || "Painting";
-        }
-    } catch (_) {
-        // defaults will be used in handleCommission
-    }
-}
+function populateCommissionSection(artData) {
+    const section = document.getElementById("commission-section");
+    if (!section) return;
 
-// ── Commission flow ───────────────────────────────────────────────────────────
-//
-//  The gallery API's /login route (POST /login) returns:
-//    { status: "success", message: "Login was approved" }   on success
-//    { status: "failure", message: "Invalid credentials" }  on failure  (HTTP 400)
-//
-//  There is no user id in the login response, so we do a two-step:
-//    1. POST /login  → verify credentials
-//    2. GET  /login  → not available; instead we stored the viewer_id in
-//       sessionStorage at registration time (see register.html) OR we
-//       ask the user to confirm their id. As a pragmatic fallback we
-//       pass viewer_id = null and let the DB use its default / FK rule.
-//
-//  If you add a GET /users?email=... route later, swap step 2 below.
-//
-async function handleCommission(artData, statusEl) {
-    const email    = document.querySelector("#login-email")?.value?.trim();
-    const password = document.querySelector("#login-password")?.value;
+    const session = window.Auth ? window.Auth.getSession() : null;
 
-    if (!email || !password) {
-        showStatus(statusEl, "Please enter your email and password.", "error");
+    if (!session) {
+        section.innerHTML = `
+            <p class="form-intro">
+                Sign in to request a commissioned replica of this piece from one of our artists.
+            </p>
+            <a href="login.html" class="commission-btn" style="display:block;text-align:center;margin-bottom:0;">
+                <span>Sign In to Commission</span>
+            </a>
+            <p class="register-link">No account yet? <a href="register.html">Register here</a></p>
+        `;
         return;
     }
 
-    showStatus(statusEl, "Verifying credentials...", "");
-
-    try {
-        // ── Step 1: Authenticate against gallery API ──────────────────────
-        // Route: POST /login   (routes.php line: $app->post('/login', ...))
-        const loginRes = await fetch(`${GALLERY_API_BASE}/login`, {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify({ email, password })
-        });
-
-        const loginData = await loginRes.json().catch(() => ({}));
-
-        // The controller returns HTTP 400 + { status:"failure" } on bad credentials
-        if (!loginRes.ok || loginData.status === "failure") {
-            showStatus(
-                statusEl,
-                loginData.message || "Invalid credentials. Please try again or register.",
-                "error"
-            );
-            return;
-        }
-
-        // ── Step 2: Retrieve viewer_id ────────────────────────────────────
-        // /login response does not include the user id.
-        // We read a cached id stored by register.html, or fall back to null.
-        const cachedUserId = sessionStorage.getItem("gallery-user-id")
-            ? parseInt(sessionStorage.getItem("gallery-user-id"), 10)
-            : null;
-
-        showStatus(statusEl, "Submitting commission request...", "");
-
-        // ── Step 3: Resolve final artwork metadata ────────────────────────
-        const artTitle    = artData._enrichedTitle  || artData.itemTitle || "Unknown";
-        const artistTitle = artData._enrichedArtist || artData.artist    || "Unknown";
-        const artType     = artData._enrichedType   || "Painting";
-
-        // ── Step 4: POST to requested-pieces ─────────────────────────────
-        // Route: POST /requested-pieces/   (routes.php group '/requested-pieces')
-        // DB columns: art_piece_name, artist_name, artwork_type, viewer_id, is_selected
-        const commissionPayload = {
-            art_piece_name: artTitle,
-            artist_name:    artistTitle,
-            artwork_type:   artType,
-            is_selected:    0           // TINYINT / boolean false
-        };
-
-        // Only include viewer_id if we have it — avoids FK violation on null
-        if (cachedUserId !== null) {
-            commissionPayload.viewer_id = cachedUserId;
-        }
-
-        const commissionRes = await fetch(`${GALLERY_API_BASE}/requested-pieces/`, {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify(commissionPayload)
-        });
-
-        const commissionData = await commissionRes.json().catch(() => ({}));
-
-        if (!commissionRes.ok || commissionData.status === "failure") {
-            showStatus(
-                statusEl,
-                commissionData.message || "Could not submit commission. Please try again.",
-                "error"
-            );
-            return;
-        }
-
-        showStatus(
-            statusEl,
-            "Your commission request has been submitted successfully.",
-            "success"
-        );
-
-    } catch (err) {
-        console.error("Commission error:", err);
-        showStatus(statusEl, "A network error occurred. Please check your connection.", "error");
+    if (session.role === "artist") {
+        section.innerHTML = `
+            <p class="form-intro">
+                You are browsing as an artist. View and manage all incoming commission requests from your dashboard.
+            </p>
+            <a href="requests.html" class="commission-btn" style="display:block;text-align:center;margin-bottom:0;">
+                <span>View Commission Requests</span>
+            </a>
+        `;
+        return;
     }
-}
 
-// ── Helper ────────────────────────────────────────────────────────────────────
-function showStatus(el, message, type) {
-    el.textContent   = message;
-    el.className     = type;          // matches CSS: .error / .success / ""
-    el.style.display = "block";
-}
+    const budgetOptions = ["50", "100", "200", "300", "400", "500+"];
 
-// ── Boot ──────────────────────────────────────────────────────────────────────
-initProductDetails();
+    // Logged-in viewer
+    section.innerHTML = `
+        <style>
+          .custom-select { position: relative; user-select: none; margin-bottom: 20px; }
+          .custom-select-label { font-size:0.62rem;letter-spacing:0.22em;color:var(--gold-dim);text-transform:uppercase;display:block;margin-bottom:6px; }
+          .custom-select-trigger {
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--gold-dim);
+            color: var(--cream);
+            font-family: 'Tenor Sans', sans-serif;
+            font-size: 0.9rem;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+          }
+          .custom-select-trigger:hover,
+          .custom-select.open .custom-select-trigger { border-color: var(--gold); background: rgba(201,168,76,0.06); }
+          .custom-select-arrow {
+            font-size: 0.65rem; color: var(--gold-dim); transition: transform 0.2s;
+          }
+          .custom-select.open .custom-select-arrow { transform: rotate(180deg); }
+          .custom-select-options {
+            display: none;
+            position: absolute;
+            top: 100%; left: 0; right: 0;
+            background: #1a1508;
+            border: 1px solid var(--gold-dim);
+            border-top: none;
+            z-index: 50;
+          }
+          .custom-select.open .custom-select-options { display: block; }
+          .custom-select-option {
+            padding: 10px 14px;
+            font-family: 'Tenor Sans', sans-serif;
+            font-size: 0.9rem;
+            color: var(--cream-dim);
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            border-bottom: 1px solid rgba(201,168,76,0.08);
+          }
+          .custom-select-option:last-child { border-bottom: none; }
+          .custom-select-option:hover,
+          .custom-select-option.selected { background: rgba(201,168,76,0.12); color: var(--gold); }
+        </style>
+        <p class="form-intro">
+            Select your budget and submit a commission request. An artist will review it and get back to you.
+        </p>
+        <div class="custom-select" id="budget-select">
+            <span class="custom-select-label">Budget</span>
+            <div class="custom-select-trigger">
+                <span id="budget-display">$50</span>
+                <span class="custom-select-arrow">&#9660;</span>
+            </div>
+            <div class="custom-select-options">
+                ${budgetOptions.map((v, i) => `<div class="custom-select-option${i === 0 ? " selected" : ""}" data-value="${v}">$${v}</div>`).join("")}
+            </div>
+        </div>
+        <button class="commission-btn" id="commission-btn">
+            <span>Commission a Replica</span>
+        </button>
+        <div id="commission-status" style="text-align:center;font-size:0.75rem;letter-spacing:0.1em;padding:10px;margin-top:12px;display:none;"></div>
+        <p class="register-link" style="margin-top:14px;">
+            Signed in as ${session.firstName} ${session.lastName} &nbsp;·&nbsp;
+            <button onclick="Auth.logout()" style="background:none;border:none;color:var(--gold);cursor:pointer;font-family:inherit;font-size:inherit;letter-spacing:inherit;text-transform:inherit;border-bottom:1px solid var(--gold-dim);">Sign Out</button>
+        </p>
+    `;
+
+    // Custom dropdown logic
+    let selectedBudget = "50";
+    const selectEl = document.getElementById("budget-select");
+    const trigger = selectEl.querySelector(".custom-select-trigger");
+    const display = document.getElementById("budget-display");
+    const options = selectEl.querySelectorAll(".custom-select-option");
+
+    trigger.addEventListener("click", () => selectEl.classList.toggle("open"));
+    options.forEach(opt => {
+        opt.addEventListener("click", () => {
+            selectedBudget = opt.dataset.value;
+            display.textContent = `$${selectedBudget}`;
+            options.forEach(o => o.classList.remove("selected"));
+            opt.classList.add("selected");
+            selectEl.classList.remove("open");
+        });
+    });
+    document.addEventListener("click", e => {
+        if (!selectEl.contains(e.target)) selectEl.classList.remove("open");
+    });
+
+    document.getElementById("commission-btn").addEventListener("click", async () => {
+        const btn = document.getElementById("commission-btn");
+        const statusEl = document.getElementById("commission-status");
+        const budget = selectedBudget;
+
+        btn.disabled = true;
+        statusEl.style.display = "block";
+        statusEl.style.color = "var(--cream-dim)";
+        statusEl.style.borderColor = "var(--gold-dim)";
+        statusEl.style.border = "1px solid var(--gold-dim)";
+        statusEl.textContent = "Submitting request...";
+
+        try {
+            const res = await fetch(`${API_BASE}/request`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userEmail: session.email,
+                    artwork: {
+                        id: artData.itemID,
+                        title: artData.itemTitle,
+                        artist: artData.artist,
+                        imageId: artData.image_id,
+                    },
+                    budget,
+                }),
+            });
+
+            const result = await res.json();
+            if (!res.ok) {
+                statusEl.style.color = "var(--err)";
+                statusEl.style.border = "1px solid var(--err)";
+                statusEl.textContent = result.error || "Request failed.";
+                btn.disabled = false;
+                return;
+            }
+
+            statusEl.style.color = "var(--success)";
+            statusEl.style.border = "1px solid var(--success)";
+            statusEl.textContent = "Commission request submitted successfully!";
+            btn.style.opacity = "0.5";
+            btn.disabled = true;
+        } catch {
+            statusEl.style.color = "var(--err)";
+            statusEl.style.border = "1px solid var(--err)";
+            statusEl.textContent = "Could not connect to the server.";
+            btn.disabled = false;
+        }
+    });
+}

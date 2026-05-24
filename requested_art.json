@@ -1,0 +1,64 @@
+{
+  "requests": [
+    {
+      "id": "1779624510831",
+      "artwork": {
+        "id": "80607",
+        "title": "Self-Portrait",
+        "artist": "Vincent van Gogh",
+        "imageId": "47c5bcb8-62ef-e5d7-55e7-f5121f409a30"
+      },
+      "viewer": {
+        "firstName": "Karan",
+        "lastName": "Kumar",
+        "email": "karan30375@gmail.com",
+        "phone": "4389698029"
+      },
+      "budget": "300",
+      "status": "pending",
+      "requestedAt": "2026-05-24T12:08:30.831Z",
+      "completedAt": null,
+      "completedImagePath": null
+    },
+    {
+      "id": "1779627358194",
+      "artwork": {
+        "id": "20684",
+        "title": "Paris Street; Rainy Day",
+        "artist": "Gustave Caillebotte",
+        "imageId": "f8fd76e9-c396-5678-36ed-6a348c904d27"
+      },
+      "viewer": {
+        "firstName": "Jakub",
+        "lastName": "Dobes",
+        "email": "dobby75@gmail.com",
+        "phone": "4384206967"
+      },
+      "budget": "500+",
+      "status": "pending",
+      "requestedAt": "2026-05-24T12:55:58.194Z",
+      "completedAt": null,
+      "completedImagePath": null
+    },
+    {
+      "id": "1779627779368",
+      "artwork": {
+        "id": "89503",
+        "title": "Under the Wave off Kanagawa (Kanagawa oki nami ura), also known as The Great Wave, from the series \"Thirty-Six Views of Mount Fuji (Fugaku sanjurokkei)\"",
+        "artist": "Katsushika Hokusai",
+        "imageId": "2fa24f36-cc26-41b6-4b49-12bba2a6c1c8"
+      },
+      "viewer": {
+        "firstName": "Karan",
+        "lastName": "Kumar",
+        "email": "karan30375@gmail.com",
+        "phone": "4389698029"
+      },
+      "budget": "50",
+      "status": "pending",
+      "requestedAt": "2026-05-24T13:02:59.368Z",
+      "completedAt": null,
+      "completedImagePath": null
+    }
+  ]
+}
