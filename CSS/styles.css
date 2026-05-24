@@ -81,3 +81,282 @@ body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     min-width: 150px;
 }
+
+/* ===== Gallery Navigation ===== */
+.gallery-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gallery-nav .nav-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #c9a84c;
+    text-decoration: none;
+}
+
+.gallery-nav .nav-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* ===== Shared Buttons ===== */
+.btn-gallery {
+    padding: 7px 18px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    border: none;
+    font-family: inherit;
+}
+
+.btn-gallery-outline {
+    background: transparent;
+    border: 1px solid #c9a84c;
+    color: #c9a84c;
+}
+
+.btn-gallery-outline:hover {
+    background: #c9a84c;
+    color: #1a1a1a;
+}
+
+.btn-gallery-solid {
+    background: #c9a84c;
+    color: #1a1a1a;
+}
+
+.btn-gallery-solid:hover {
+    background: #b8923e;
+    color: #1a1a1a;
+}
+
+/* ===== Auth Pages (Login / Register) ===== */
+.auth-page {
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a1a1a;
+    background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(61, 42, 29, 0.35) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 50%, rgba(61, 42, 29, 0.25) 0%, transparent 60%);
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.auth-card {
+    background: rgba(30, 30, 30, 0.92);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+}
+
+.auth-brand {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.auth-brand h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #c9a84c;
+    letter-spacing: 0.12em;
+    margin: 0 0 6px;
+}
+
+.auth-brand p {
+    color: #888;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.auth-card .form-group {
+    margin-bottom: 16px;
+}
+
+.auth-card label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    color: #aaa;
+    text-transform: uppercase;
+}
+
+.auth-card input[type="text"],
+.auth-card input[type="email"],
+.auth-card input[type="tel"],
+.auth-card input[type="password"] {
+    width: 100%;
+    padding: 10px 13px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid #3a3a3a;
+    border-radius: 7px;
+    color: #fff;
+    font-size: 0.93rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    font-family: inherit;
+}
+
+.auth-card input[type="text"]:focus,
+.auth-card input[type="email"]:focus,
+.auth-card input[type="tel"]:focus,
+.auth-card input[type="password"]:focus {
+    outline: none;
+    border-color: #c9a84c;
+    background: rgba(201, 168, 76, 0.07);
+}
+
+.auth-card input::placeholder {
+    color: #555;
+}
+
+.auth-card .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 22px;
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.auth-card .checkbox-group input[type="checkbox"] {
+    accent-color: #c9a84c;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+
+.auth-card .checkbox-group label {
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #888;
+    cursor: pointer;
+    margin: 0;
+}
+
+.auth-submit {
+    width: 100%;
+    padding: 12px;
+    background: #c9a84c;
+    color: #1a1a1a;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    transition: background 0.2s ease;
+    font-family: inherit;
+}
+
+.auth-submit:hover {
+    background: #b8923e;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.84rem;
+    color: #666;
+}
+
+.auth-footer a {
+    color: #c9a84c;
+    text-decoration: none;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Mobile Responsive ===== */
+@media (max-width: 768px) {
+    .gallery-nav {
+        padding: 10px 16px;
+    }
+
+    .gallery-nav .nav-brand {
+        font-size: 1.05rem;
+    }
+
+    .btn-gallery {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+
+    #tour-guide-hud {
+        width: 92%;
+        padding: 10px 14px;
+        bottom: 10px;
+    }
+
+    #tour-guide-hud h2 {
+        font-size: 0.88rem;
+        margin: 0 0 4px;
+    }
+
+    #tour-guide-hud p {
+        font-size: 0.8rem;
+        margin: 0;
+    }
+
+    .hallway {
+        padding: 0 6vw;
+        gap: 18vw;
+    }
+
+    .frame img {
+        height: 36vh;
+    }
+
+    .label-plate {
+        font-size: 0.78rem;
+        padding: 6px 10px;
+    }
+
+    .auth-card {
+        padding: 28px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .frame img {
+        height: 28vh;
+    }
+
+    .hallway {
+        padding: 0 5vw;
+        gap: 22vw;
+    }
+
+    .frame {
+        padding: 10px;
+        border-width: 5px;
+    }
+}

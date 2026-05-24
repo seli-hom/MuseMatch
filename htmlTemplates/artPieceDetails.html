@@ -1,24 +1,31 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MuseMatch Close Up</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../CSS/styles.css" />
     <style>
+      body { background-color: #1a1a1a; }
       .artwork-preview {
         max-width: 100%;
         max-height: 450px;
         object-fit: contain;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       }
     </style>
   </head>
   <body>
-    <div class="container my-5">
+    <nav class="gallery-nav">
+      <a href="gallery.html" class="nav-brand">MuseMatch</a>
+      <div class="nav-actions">
+        <a href="login.html" class="btn-gallery btn-gallery-outline">Login</a>
+        <a href="register.html" class="btn-gallery btn-gallery-solid">Register</a>
+      </div>
+    </nav>
+
+    <div class="container my-5" style="padding-top: 60px;">
       <div class="row">
         <div class="col-md-6 mb-4 text-center">
           <img
@@ -67,7 +74,7 @@
         </div>
       </div>
     </div>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/dist/js/bootstrap.bundle.min.js"></script> -->
-    <script src="../JS/artWorkDetails.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="../JS/artWorkDetails.js"></script>
   </body>
 </html>

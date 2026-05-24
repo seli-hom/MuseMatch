@@ -3,37 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login MuseMatch</title>
+    <title>Login — MuseMatch</title>
+    <link rel="stylesheet" href="../CSS/styles.css" />
   </head>
-  <body>
-    <form action="submit" method="post">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required />
+  <body class="auth-page">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <h1>MuseMatch</h1>
+        <p>Sign in to your gallery account</p>
       </div>
 
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required />
-      </div>
+      <form action="submit" method="post">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required />
+        </div>
 
-      <div class="checkbox-group">
-        <input type="checkbox" id="showPassword" />
-        <label for="showPassword">Show Passwords</label>
-      </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required />
+        </div>
 
-      <button type="submit">Submit</button>
-    </form>
+        <div class="checkbox-group">
+          <input type="checkbox" id="showPassword" />
+          <label for="showPassword">Show password</label>
+        </div>
+
+        <button type="submit" class="auth-submit">Sign In</button>
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account? <a href="register.html">Register</a>
+      </div>
+    </div>
 
     <script>
       const showPasswordCheckbox = document.getElementById("showPassword");
       const passwordField = document.getElementById("password");
 
       showPasswordCheckbox.addEventListener("change", function () {
-        const type = this.checked ? "text" : "password";
-
-        passwordField.type = type;
-        confirmPasswordField.type = type;
+        passwordField.type = this.checked ? "text" : "password";
       });
     </script>
   </body>
