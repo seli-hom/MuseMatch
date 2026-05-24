@@ -4,66 +4,376 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MuseMatch Gallery</title>
-    <link rel="stylesheet" href="../CSS/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Tenor+Sans&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0c0a08;
+        --bg2: #131109;
+        --gold: #c9a84c;
+        --gold-dim: #7a6330;
+        --cream: #f2ead8;
+        --cream-dim: #a09070;
+        --panel: rgba(20, 17, 10, 0.92);
+        --shadow: rgba(0,0,0,0.7);
+        --frame-outer: #3a2e18;
+        --frame-inner: #5c4820;
+        --frame-line: #c9a84c;
+        --err: #c0392b;
+        --success: #6aad7a;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        background: var(--bg);
+        color: var(--cream);
+        font-family: 'Tenor Sans', sans-serif;
+        overflow-x: hidden;
+        min-height: 100vh;
+        cursor: crosshair;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 80% 50% at 50% 110%, #2a1f08 0%, transparent 70%),
+          repeating-linear-gradient(90deg, transparent, transparent 120px, rgba(255,255,255,0.012) 120px, rgba(255,255,255,0.012) 121px),
+          repeating-linear-gradient(0deg, transparent, transparent 120px, rgba(255,255,255,0.012) 120px, rgba(255,255,255,0.012) 121px);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ── Nav rail ── */
+      .gallery-rail {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 40px;
+        border-bottom: 1px solid var(--gold-dim);
+        background: linear-gradient(180deg, #1a1508 0%, transparent 100%);
+      }
+
+      .museum-wordmark {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.6rem;
+        font-weight: 300;
+        letter-spacing: 0.35em;
+        color: var(--gold);
+        text-transform: uppercase;
+      }
+      .museum-wordmark span { font-style: italic; color: var(--cream-dim); }
+
+      .rail-meta {
+        font-size: 0.7rem;
+        letter-spacing: 0.2em;
+        color: var(--cream-dim);
+        text-transform: uppercase;
+      }
+
+      /* Auth nav */
+      #rail-auth {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+      .rail-link {
+        font-size: 0.68rem;
+        letter-spacing: 0.2em;
+        color: var(--cream-dim);
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .rail-link:hover { color: var(--gold); }
+      .rail-link-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: 'Tenor Sans', sans-serif;
+        padding: 0;
+      }
+      .rail-username {
+        font-size: 0.68rem;
+        letter-spacing: 0.2em;
+        color: var(--gold);
+        text-transform: uppercase;
+      }
+
+      /* ── Tour Guide HUD ── */
+      #tour-guide-hud {
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        background: var(--panel);
+        border: 1px solid var(--gold-dim);
+        border-top: 2px solid var(--gold);
+        padding: 12px 28px;
+        text-align: center;
+        min-width: 360px;
+        max-width: 560px;
+        backdrop-filter: blur(12px);
+        pointer-events: none;
+      }
+
+      #guide-status {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 0.85rem;
+        font-style: italic;
+        color: var(--gold);
+        letter-spacing: 0.08em;
+        margin-bottom: 3px;
+      }
+
+      #artwork-info {
+        font-size: 0.72rem;
+        letter-spacing: 0.15em;
+        color: var(--cream-dim);
+        text-transform: uppercase;
+      }
+
+      /* ── Gallery wrapper ── */
+      .gallery-wrapper {
+        position: relative;
+        z-index: 1;
+        overflow-x: auto;
+        overflow-y: hidden;
+        width: 100%;
+        padding: 60px 0 80px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--gold-dim) var(--bg2);
+      }
+      .gallery-wrapper::-webkit-scrollbar { height: 4px; }
+      .gallery-wrapper::-webkit-scrollbar-track { background: var(--bg2); }
+      .gallery-wrapper::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+      /* ── Hallway ── */
+      .hallway {
+        display: flex;
+        align-items: flex-end;
+        gap: 60px;
+        padding: 0 80px;
+        min-width: max-content;
+        position: relative;
+      }
+      .hallway::after {
+        content: '';
+        position: absolute;
+        bottom: -20px;
+        left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, var(--gold-dim) 10%, var(--gold-dim) 90%, transparent);
+      }
+
+      /* ── Exhibit ── */
+      .exhibit {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+      }
+      .exhibit:hover { transform: translateY(-8px); }
+      .exhibit.active .frame {
+        box-shadow:
+          0 0 0 1px var(--gold),
+          0 0 30px rgba(201, 168, 76, 0.35),
+          0 20px 60px var(--shadow);
+      }
+
+      /* ── Frame ── */
+      .frame {
+        background: var(--frame-outer);
+        padding: 14px;
+        position: relative;
+        box-shadow:
+          inset 0 0 0 1px var(--frame-line),
+          inset 4px 4px 0 var(--frame-inner),
+          inset -4px -4px 0 var(--frame-inner),
+          0 15px 50px var(--shadow);
+        transition: box-shadow 0.4s ease;
+      }
+      .frame::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border: 1px solid var(--gold-dim);
+        pointer-events: none;
+        z-index: 1;
+      }
+      .frame img {
+        display: block;
+        max-height: 340px;
+        max-width: 280px;
+        min-width: 180px;
+        min-height: 200px;
+        width: auto;
+        height: auto;
+        object-fit: cover;
+        position: relative;
+        z-index: 0;
+        background: #1a150a;
+      }
+
+      /* ── Label plate ── */
+      .label-plate {
+        background: linear-gradient(135deg, #1c1608 0%, #241d0a 100%);
+        border: 1px solid var(--gold-dim);
+        border-top: 2px solid var(--gold);
+        padding: 10px 16px 12px;
+        text-align: center;
+        width: 100%;
+        min-width: 180px;
+        margin-top: 12px;
+      }
+      .label-plate strong {
+        display: block;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--cream);
+        letter-spacing: 0.04em;
+        line-height: 1.3;
+        margin-bottom: 3px;
+      }
+      .label-plate span {
+        display: block;
+        font-size: 0.68rem;
+        letter-spacing: 0.18em;
+        color: var(--gold);
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+
+      /* ── View Details button ── */
+      .view-details-btn {
+        display: inline-block;
+        padding: 7px 18px;
+        background: transparent;
+        border: 1px solid var(--gold-dim);
+        color: var(--gold);
+        font-family: 'Tenor Sans', sans-serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+      .view-details-btn:hover {
+        background: var(--gold);
+        color: var(--bg);
+        border-color: var(--gold);
+        box-shadow: 0 0 20px rgba(201, 168, 76, 0.4);
+      }
+
+      /* ── Pagination ── */
+      .pagination-wrap {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 24px 0 36px;
+        border-top: 1px solid rgba(201, 168, 76, 0.15);
+      }
+      .page-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 1px solid var(--gold-dim);
+        color: var(--gold-dim);
+        font-family: 'Tenor Sans', sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .page-btn:hover, .page-btn.active {
+        background: var(--gold);
+        color: var(--bg);
+        border-color: var(--gold);
+      }
+      .page-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+      .page-btn.arrow { font-size: 1rem; width: 44px; }
+      .page-label {
+        font-size: 0.68rem;
+        letter-spacing: 0.2em;
+        color: var(--cream-dim);
+        text-transform: uppercase;
+        padding: 0 12px;
+      }
+
+      /* ── Loading / scroll hint ── */
+      .loading-msg {
+        width: 100%;
+        text-align: center;
+        padding: 80px 0;
+        font-family: 'Cormorant Garamond', serif;
+        font-style: italic;
+        font-size: 1.2rem;
+        color: var(--gold-dim);
+        letter-spacing: 0.15em;
+      }
+      .scroll-hint {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        font-size: 0.62rem;
+        letter-spacing: 0.3em;
+        color: var(--gold-dim);
+        text-transform: uppercase;
+        padding-bottom: 8px;
+        animation: fadeHint 3s ease-in-out infinite;
+      }
+      @keyframes fadeHint {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 1; }
+      }
+    </style>
   </head>
   <body>
-    <!-- Navigation -->
-    <nav class="gallery-nav">
-      <a href="#" class="nav-brand">MuseMatch</a>
-      <div class="nav-actions">
-        <a href="login.html" class="btn-gallery btn-gallery-outline">Login</a>
-        <a href="register.html" class="btn-gallery btn-gallery-solid">Register</a>
-      </div>
-    </nav>
 
-    <!-- Simple Tour Guide HUD Overlay -->
+    <div class="gallery-rail">
+      <div class="museum-wordmark">Muse<span>Match</span></div>
+      <div class="rail-meta" id="page-counter">Gallery · Page 1</div>
+      <div id="rail-auth"></div>
+    </div>
+
     <div id="tour-guide-hud">
-      <h2 id="guide-status">Walk up to a painting to hear the guide...</h2>
+      <h2 id="guide-status">Stroll through the gallery to hear the guide...</h2>
       <p id="artwork-info"></p>
     </div>
 
-    <!-- The Horizontal Hallway -->
+    <div class="scroll-hint">← scroll to explore →</div>
+
     <div class="gallery-wrapper">
       <div id="gallery-hallway" class="hallway">
-        <!-- Artworks will be injected here dynamically -->
+        <div class="loading-msg">Curating the collection...</div>
       </div>
     </div>
-            <nav class="mt-2">
-                <ul
-                  class="pagination pagination-sm justify-content-center mb-0"
-                  id="fungiPagination"
-                >
-                  <!-- Rendered dynamically -->
-                </ul>
-              </nav>
 
-    <!-- Request Artwork Modal -->
-    <div id="request-modal" class="modal-overlay" style="display:none;">
-      <div class="modal-card">
-        <button class="modal-close" id="modal-close-btn">&#x2715;</button>
-        <h2 class="modal-title">Request Artwork</h2>
-        <p id="modal-art-title" class="modal-subtitle"></p>
-
-        <div id="modal-error" class="auth-error" style="display:none;"></div>
-
-        <div class="form-group">
-          <label for="modal-budget">Your Budget</label>
-          <select id="modal-budget" class="modal-select">
-            <option value="50">$50</option>
-            <option value="100">$100</option>
-            <option value="200">$200</option>
-            <option value="300">$300</option>
-            <option value="400">$400</option>
-            <option value="500+">$500+</option>
-          </select>
-        </div>
-
-        <button id="modal-submit-btn" class="auth-submit" style="margin-top:8px;">Send Request</button>
-      </div>
+    <div class="pagination-wrap">
+      <button class="page-btn arrow" id="prev-page">&#8592;</button>
+      <span class="page-label" id="page-label">Page 1 of —</span>
+      <button class="page-btn arrow" id="next-page">&#8594;</button>
     </div>
 
     <script src="../JS/auth.js"></script>
-    <script>Auth.updateNav();</script>
     <script src="../JS/app.js"></script>
   </body>
 </html>

@@ -40,28 +40,31 @@ const Auth = {
     },
 
     isArtist() {
-        const session = this.getSession();
-        return session && session.role === "artist";
+        const s = this.getSession();
+        return s && s.role === "artist";
     },
 
     updateNav() {
         const session = this.getSession();
-        const navActions = document.querySelector(".nav-actions");
-        if (!navActions) return;
+        const container = document.getElementById("rail-auth");
+        if (!container) return;
         if (session) {
-            const requestsLink = session.role === "artist"
-                ? `<a href="requests.html" class="btn-gallery btn-gallery-solid">Requests</a>`
+            const commissionsLink = session.role === "artist"
+                ? `<a class="rail-link" href="requests.html">Commissions</a>`
                 : "";
-            navActions.innerHTML = `
-                <span class="nav-user">Hi, ${session.firstName}</span>
-                ${requestsLink}
-                <button onclick="Auth.logout()" class="btn-gallery btn-gallery-outline">Logout</button>
+            container.innerHTML = `
+                <span class="rail-username">${session.firstName} ${session.lastName}</span>
+                ${commissionsLink}
+                <button class="rail-link rail-link-btn" onclick="Auth.logout()">Sign Out</button>
             `;
         } else {
-            navActions.innerHTML = `
-                <a href="login.html" class="btn-gallery btn-gallery-outline">Login</a>
-                <a href="register.html" class="btn-gallery btn-gallery-solid">Register</a>
+            container.innerHTML = `
+                <a class="rail-link" href="login.html">Sign In</a>
+                <a class="rail-link" href="register.html">Register</a>
             `;
         }
     },
 };
+
+// Expose globally so ES module scripts can access it
+window.Auth = Auth;

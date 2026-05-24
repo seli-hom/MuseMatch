@@ -3,72 +3,386 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register — MuseMatch</title>
-    <link rel="stylesheet" href="../CSS/styles.css" />
+    <title>MuseMatch — Register</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Tenor+Sans&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0c0a08;
+        --gold: #c9a84c;
+        --gold-dim: #7a6330;
+        --cream: #f2ead8;
+        --cream-dim: #a09070;
+        --panel: rgba(20, 17, 10, 0.97);
+        --err: #c0392b;
+        --success: #6aad7a;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        background: var(--bg);
+        color: var(--cream);
+        font-family: 'Tenor Sans', sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 100% 80% at 50% 100%, #2a1f08 0%, transparent 65%),
+          radial-gradient(ellipse 60% 60% at 20% 20%, #1a1508 0%, transparent 60%),
+          repeating-linear-gradient(90deg, transparent, transparent 120px, rgba(255,255,255,0.01) 120px, rgba(255,255,255,0.01) 121px);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .rail {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 48px;
+        border-bottom: 1px solid var(--gold-dim);
+        background: linear-gradient(180deg, #1a1508 0%, transparent 100%);
+        flex-shrink: 0;
+      }
+      .museum-wordmark {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 300;
+        letter-spacing: 0.35em;
+        color: var(--gold);
+        text-transform: uppercase;
+        text-decoration: none;
+      }
+      .museum-wordmark span { font-style: italic; color: var(--cream-dim); }
+      .back-link {
+        font-size: 0.7rem;
+        letter-spacing: 0.2em;
+        color: var(--cream-dim);
+        text-transform: uppercase;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: color 0.2s, border-color 0.2s;
+      }
+      .back-link:hover { color: var(--gold); border-color: var(--gold-dim); }
+
+      .page-body {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 24px;
+      }
+
+      .register-layout {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        max-width: 840px;
+        width: 100%;
+        border: 1px solid var(--gold-dim);
+      }
+
+      /* Decorative left panel */
+      .deco-panel {
+        background: linear-gradient(135deg, #1a1408 0%, #0f0c04 100%);
+        border-right: 1px solid var(--gold-dim);
+        padding: 52px 44px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .deco-panel::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 280px; height: 280px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%);
+      }
+      .deco-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.6rem;
+        font-weight: 300;
+        line-height: 1.1;
+        color: var(--gold);
+        letter-spacing: 0.04em;
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 1;
+      }
+      .deco-title em { display: block; font-style: italic; font-size: 1.8rem; color: var(--cream-dim); }
+      .deco-rule { width: 48px; height: 1px; background: var(--gold); margin-bottom: 20px; position: relative; z-index: 1; }
+      .deco-text { font-size: 0.82rem; line-height: 1.75; color: var(--cream-dim); letter-spacing: 0.03em; position: relative; z-index: 1; }
+      .deco-ornament {
+        position: absolute;
+        bottom: 32px; left: 32px;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 7rem;
+        font-style: italic;
+        color: rgba(201,168,76,0.05);
+        line-height: 1;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      /* Right form panel */
+      .form-panel {
+        background: var(--panel);
+        padding: 40px 36px;
+        border-top: 2px solid var(--gold);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .form-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1rem;
+        font-weight: 400;
+        letter-spacing: 0.28em;
+        color: var(--gold);
+        text-transform: uppercase;
+        margin-bottom: 24px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--gold-dim);
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+      .form-group label {
+        font-size: 0.6rem;
+        letter-spacing: 0.22em;
+        color: var(--gold-dim);
+        text-transform: uppercase;
+      }
+      .form-group input {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--gold-dim);
+        color: var(--cream);
+        font-family: 'Tenor Sans', sans-serif;
+        font-size: 0.85rem;
+        padding: 10px 14px;
+        outline: none;
+        transition: border-color 0.2s, background 0.2s;
+        border-radius: 0;
+        width: 100%;
+      }
+      .form-group input:focus { border-color: var(--gold); background: rgba(201,168,76,0.06); }
+      .form-group input::placeholder { color: var(--cream-dim); opacity: 0.4; }
+
+      /* Role selector */
+      .role-label {
+        font-size: 0.6rem;
+        letter-spacing: 0.22em;
+        color: var(--gold-dim);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .role-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 1px solid var(--gold-dim);
+        margin-bottom: 14px;
+      }
+      .role-option { position: relative; }
+      .role-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+      .role-option label {
+        display: block;
+        padding: 10px;
+        text-align: center;
+        font-size: 0.65rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--cream-dim);
+        cursor: pointer;
+        transition: all 0.2s;
+        border-right: 1px solid var(--gold-dim);
+      }
+      .role-option:last-child label { border-right: none; }
+      .role-option input[type="radio"]:checked + label {
+        background: rgba(201,168,76,0.12);
+        color: var(--gold);
+      }
+
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .checkbox-row input[type="checkbox"] { accent-color: var(--gold); }
+      .checkbox-row label {
+        font-size: 0.65rem;
+        letter-spacing: 0.15em;
+        color: var(--cream-dim);
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 13px;
+        background: transparent;
+        border: 1px solid var(--gold);
+        color: var(--gold);
+        font-family: 'Tenor Sans', sans-serif;
+        font-size: 0.68rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .submit-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--gold);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+        z-index: 0;
+      }
+      .submit-btn:hover::before { transform: scaleX(1); }
+      .submit-btn:hover { color: var(--bg); }
+      .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .submit-btn span { position: relative; z-index: 1; }
+
+      .login-link {
+        text-align: center;
+        font-size: 0.65rem;
+        letter-spacing: 0.15em;
+        color: var(--cream-dim);
+        text-transform: uppercase;
+        margin-top: 14px;
+      }
+      .login-link a { color: var(--gold); text-decoration: none; border-bottom: 1px solid var(--gold-dim); transition: color 0.2s; }
+      .login-link a:hover { color: var(--cream); }
+
+      #register-status {
+        text-align: center;
+        font-size: 0.73rem;
+        letter-spacing: 0.1em;
+        padding: 10px 12px;
+        margin-top: 12px;
+        display: none;
+        line-height: 1.5;
+      }
+      #register-status.error   { color: var(--err);     border: 1px solid var(--err); }
+      #register-status.success { color: var(--success);  border: 1px solid var(--success); }
+      #register-status.loading { color: var(--cream-dim); border: 1px solid var(--gold-dim); }
+
+      @media (max-width: 640px) {
+        .register-layout { grid-template-columns: 1fr; }
+        .deco-panel { display: none; }
+        .rail { padding: 16px 20px; }
+        .form-row { grid-template-columns: 1fr; gap: 0; }
+      }
+    </style>
   </head>
-  <body class="auth-page">
-    <div class="auth-card">
-      <div class="auth-brand">
-        <h1>MuseMatch</h1>
-        <p>Create your gallery account</p>
-      </div>
+  <body>
 
-      <form id="register-form">
-        <div id="auth-error" class="auth-error" style="display:none;"></div>
-        <div class="form-group">
-          <label for="firstName">First Name</label>
-          <input type="text" id="firstName" name="firstName" placeholder="Jane" required />
+    <nav class="rail">
+      <a class="museum-wordmark" href="gallery.html">Muse<span>Match</span></a>
+      <a class="back-link" href="gallery.html">← Return to Gallery</a>
+    </nav>
+
+    <div class="page-body">
+      <div class="register-layout">
+
+        <div class="deco-panel">
+          <div class="deco-title">Join the<br><em>Collection</em></div>
+          <div class="deco-rule"></div>
+          <p class="deco-text">
+            Create your MuseMatch account to commission replica masterworks
+            from our network of artists, or register as an artist to accept
+            commissions and connect with collectors of late 19th century art.
+          </p>
+          <div class="deco-ornament">M</div>
         </div>
 
-        <div class="form-group">
-          <label for="lastName">Last Name</label>
-          <input type="text" id="lastName" name="lastName" placeholder="Doe" required />
-        </div>
+        <div class="form-panel">
+          <div class="form-title">Create Account</div>
 
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="you@example.com" required />
-        </div>
-
-        <div class="form-group">
-          <label for="phone">Phone Number</label>
-          <input type="tel" id="phone" name="phone" placeholder="+1 (555) 000-0000" required />
-        </div>
-
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" placeholder="••••••••" required />
-        </div>
-
-        <div class="form-group">
-          <label for="confirmPassword">Confirm Password</label>
-          <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" required />
-        </div>
-
-        <div class="form-group">
-          <label>I am a…</label>
-          <div class="role-group">
-            <label class="role-option">
-              <input type="radio" name="role" value="viewer" checked />
-              <span>Viewer</span>
-            </label>
-            <label class="role-option">
-              <input type="radio" name="role" value="artist" />
-              <span>Artist</span>
-            </label>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">First Name</label>
+              <input type="text" id="firstName" placeholder="Jane" autocomplete="given-name" />
+            </div>
+            <div class="form-group">
+              <label for="lastName">Last Name</label>
+              <input type="text" id="lastName" placeholder="Doe" autocomplete="family-name" />
+            </div>
           </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="your@email.com" autocomplete="email" />
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" placeholder="+1 (555) 000-0000" autocomplete="tel" />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" />
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" placeholder="••••••••" autocomplete="new-password" />
+          </div>
+
+          <div class="role-label">I am a…</div>
+          <div class="role-group">
+            <div class="role-option">
+              <input type="radio" name="role" id="role-viewer" value="viewer" checked />
+              <label for="role-viewer">Viewer</label>
+            </div>
+            <div class="role-option">
+              <input type="radio" name="role" id="role-artist" value="artist" />
+              <label for="role-artist">Artist</label>
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="showPassword" />
+            <label for="showPassword">Show Passwords</label>
+          </div>
+
+          <button class="submit-btn" id="register-btn">
+            <span>Enter the Gallery</span>
+          </button>
+
+          <div id="register-status"></div>
+
+          <p class="login-link">
+            Already a member? <a href="login.html">Sign in here</a>
+          </p>
         </div>
 
-        <div class="checkbox-group">
-          <input type="checkbox" id="showPassword" />
-          <label for="showPassword">Show passwords</label>
-        </div>
-
-        <button type="submit" class="auth-submit">Create Account</button>
-      </form>
-
-      <div class="auth-footer">
-        Already have an account? <a href="login.html">Sign in</a>
       </div>
     </div>
 
@@ -80,36 +394,46 @@
         document.getElementById("confirmPassword").type = type;
       });
 
-      document.getElementById("register-form").addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const password = document.getElementById("password").value;
-        const confirmPassword = document.getElementById("confirmPassword").value;
-        const errorEl = document.getElementById("auth-error");
+      function showStatus(msg, type) {
+        const el = document.getElementById("register-status");
+        el.textContent = msg;
+        el.className = type;
+        el.style.display = "block";
+      }
 
-        if (password !== confirmPassword) {
-          errorEl.textContent = "Passwords do not match.";
-          errorEl.style.display = "block";
+      document.getElementById("register-btn").addEventListener("click", async () => {
+        const btn = document.getElementById("register-btn");
+        const firstName = document.getElementById("firstName").value.trim();
+        const lastName  = document.getElementById("lastName").value.trim();
+        const email     = document.getElementById("email").value.trim();
+        const phone     = document.getElementById("phone").value.trim();
+        const password  = document.getElementById("password").value;
+        const confirm   = document.getElementById("confirmPassword").value;
+        const role      = document.querySelector('input[name="role"]:checked').value;
+
+        if (!firstName || !lastName || !email || !password) {
+          showStatus("Please fill in all required fields.", "error");
+          return;
+        }
+        if (password !== confirm) {
+          showStatus("Passwords do not match.", "error");
           return;
         }
 
-        const role = document.querySelector('input[name="role"]:checked').value;
+        btn.disabled = true;
+        showStatus("Creating your account...", "loading");
 
-        const result = await Auth.register(
-          document.getElementById("firstName").value,
-          document.getElementById("lastName").value,
-          document.getElementById("email").value,
-          document.getElementById("phone").value,
-          password,
-          role
-        );
+        const result = await Auth.register(firstName, lastName, email, phone, password, role);
 
         if (result.success) {
-          window.location.href = "login.html";
+          showStatus("Account created! Redirecting to sign in...", "success");
+          setTimeout(() => { window.location.href = "login.html"; }, 1000);
         } else {
-          errorEl.textContent = result.error;
-          errorEl.style.display = "block";
+          showStatus(result.error || "Registration failed.", "error");
+          btn.disabled = false;
         }
       });
     </script>
+
   </body>
 </html>

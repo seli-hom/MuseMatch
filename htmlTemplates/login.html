@@ -3,39 +3,313 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login — MuseMatch</title>
-    <link rel="stylesheet" href="../CSS/styles.css" />
+    <title>MuseMatch — Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Tenor+Sans&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0c0a08;
+        --gold: #c9a84c;
+        --gold-dim: #7a6330;
+        --cream: #f2ead8;
+        --cream-dim: #a09070;
+        --panel: rgba(20, 17, 10, 0.97);
+        --err: #c0392b;
+        --success: #6aad7a;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        background: var(--bg);
+        color: var(--cream);
+        font-family: 'Tenor Sans', sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 100% 80% at 50% 100%, #2a1f08 0%, transparent 65%),
+          radial-gradient(ellipse 60% 60% at 20% 20%, #1a1508 0%, transparent 60%),
+          repeating-linear-gradient(90deg, transparent, transparent 120px, rgba(255,255,255,0.01) 120px, rgba(255,255,255,0.01) 121px);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .rail {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 48px;
+        border-bottom: 1px solid var(--gold-dim);
+        background: linear-gradient(180deg, #1a1508 0%, transparent 100%);
+        flex-shrink: 0;
+      }
+      .museum-wordmark {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 300;
+        letter-spacing: 0.35em;
+        color: var(--gold);
+        text-transform: uppercase;
+        text-decoration: none;
+      }
+      .museum-wordmark span { font-style: italic; color: var(--cream-dim); }
+      .back-link {
+        font-size: 0.7rem;
+        letter-spacing: 0.2em;
+        color: var(--cream-dim);
+        text-transform: uppercase;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: color 0.2s, border-color 0.2s;
+      }
+      .back-link:hover { color: var(--gold); border-color: var(--gold-dim); }
+
+      .page-body {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 24px;
+      }
+
+      .login-layout {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        max-width: 800px;
+        width: 100%;
+        border: 1px solid var(--gold-dim);
+      }
+
+      /* Decorative left panel */
+      .deco-panel {
+        background: linear-gradient(135deg, #1a1408 0%, #0f0c04 100%);
+        border-right: 1px solid var(--gold-dim);
+        padding: 52px 44px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .deco-panel::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 280px; height: 280px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%);
+      }
+      .deco-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.6rem;
+        font-weight: 300;
+        line-height: 1.1;
+        color: var(--gold);
+        letter-spacing: 0.04em;
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 1;
+      }
+      .deco-title em { display: block; font-style: italic; font-size: 1.8rem; color: var(--cream-dim); }
+      .deco-rule { width: 48px; height: 1px; background: var(--gold); margin-bottom: 20px; position: relative; z-index: 1; }
+      .deco-text { font-size: 0.82rem; line-height: 1.75; color: var(--cream-dim); letter-spacing: 0.03em; position: relative; z-index: 1; }
+      .deco-ornament {
+        position: absolute;
+        bottom: 32px; left: 32px;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 7rem;
+        font-style: italic;
+        color: rgba(201,168,76,0.05);
+        line-height: 1;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      /* Right form panel */
+      .form-panel {
+        background: var(--panel);
+        padding: 48px 36px;
+        border-top: 2px solid var(--gold);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .form-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1rem;
+        font-weight: 400;
+        letter-spacing: 0.28em;
+        color: var(--gold);
+        text-transform: uppercase;
+        margin-bottom: 28px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--gold-dim);
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 16px;
+      }
+      .form-group label {
+        font-size: 0.6rem;
+        letter-spacing: 0.22em;
+        color: var(--gold-dim);
+        text-transform: uppercase;
+      }
+      .form-group input {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--gold-dim);
+        color: var(--cream);
+        font-family: 'Tenor Sans', sans-serif;
+        font-size: 0.85rem;
+        padding: 10px 14px;
+        outline: none;
+        transition: border-color 0.2s, background 0.2s;
+        border-radius: 0;
+        width: 100%;
+      }
+      .form-group input:focus { border-color: var(--gold); background: rgba(201,168,76,0.06); }
+      .form-group input::placeholder { color: var(--cream-dim); opacity: 0.4; }
+
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 24px;
+      }
+      .checkbox-row input[type="checkbox"] { accent-color: var(--gold); }
+      .checkbox-row label {
+        font-size: 0.65rem;
+        letter-spacing: 0.15em;
+        color: var(--cream-dim);
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 13px;
+        background: transparent;
+        border: 1px solid var(--gold);
+        color: var(--gold);
+        font-family: 'Tenor Sans', sans-serif;
+        font-size: 0.68rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .submit-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--gold);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+        z-index: 0;
+      }
+      .submit-btn:hover::before { transform: scaleX(1); }
+      .submit-btn:hover { color: var(--bg); }
+      .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .submit-btn span { position: relative; z-index: 1; }
+
+      .register-link {
+        text-align: center;
+        font-size: 0.65rem;
+        letter-spacing: 0.15em;
+        color: var(--cream-dim);
+        text-transform: uppercase;
+        margin-top: 16px;
+      }
+      .register-link a { color: var(--gold); text-decoration: none; border-bottom: 1px solid var(--gold-dim); transition: color 0.2s; }
+      .register-link a:hover { color: var(--cream); }
+
+      #login-status {
+        text-align: center;
+        font-size: 0.73rem;
+        letter-spacing: 0.1em;
+        padding: 10px 12px;
+        margin-top: 12px;
+        display: none;
+        line-height: 1.5;
+      }
+      #login-status.error   { color: var(--err);     border: 1px solid var(--err); }
+      #login-status.success { color: var(--success);  border: 1px solid var(--success); }
+      #login-status.loading { color: var(--cream-dim); border: 1px solid var(--gold-dim); }
+
+      @media (max-width: 640px) {
+        .login-layout { grid-template-columns: 1fr; }
+        .deco-panel { display: none; }
+        .rail { padding: 16px 20px; }
+      }
+    </style>
   </head>
-  <body class="auth-page">
-    <div class="auth-card">
-      <div class="auth-brand">
-        <h1>MuseMatch</h1>
-        <p>Sign in to your gallery account</p>
-      </div>
+  <body>
 
-      <form id="login-form">
-        <div id="auth-error" class="auth-error" style="display:none;"></div>
+    <nav class="rail">
+      <a class="museum-wordmark" href="gallery.html">Muse<span>Match</span></a>
+      <a class="back-link" href="gallery.html">← Return to Gallery</a>
+    </nav>
 
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="you@example.com" required />
+    <div class="page-body">
+      <div class="login-layout">
+
+        <div class="deco-panel">
+          <div class="deco-title">Welcome<br><em>Back</em></div>
+          <div class="deco-rule"></div>
+          <p class="deco-text">
+            Sign in to your MuseMatch account to browse commission requests,
+            connect with artists, and continue building your collection of
+            late 19th century masterworks.
+          </p>
+          <div class="deco-ornament">M</div>
         </div>
 
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" placeholder="••••••••" required />
+        <div class="form-panel">
+          <div class="form-title">Sign In</div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="your@email.com" autocomplete="email" />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="showPassword" />
+            <label for="showPassword">Show Password</label>
+          </div>
+
+          <button class="submit-btn" id="login-btn">
+            <span>Enter the Gallery</span>
+          </button>
+
+          <div id="login-status"></div>
+
+          <p class="register-link">
+            No account yet? <a href="register.html">Register here</a>
+          </p>
         </div>
 
-        <div class="checkbox-group">
-          <input type="checkbox" id="showPassword" />
-          <label for="showPassword">Show password</label>
-        </div>
-
-        <button type="submit" class="auth-submit">Sign In</button>
-      </form>
-
-      <div class="auth-footer">
-        Don't have an account? <a href="register.html">Register</a>
       </div>
     </div>
 
@@ -45,19 +319,37 @@
         document.getElementById("password").type = this.checked ? "text" : "password";
       });
 
-      document.getElementById("login-form").addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const email = document.getElementById("email").value;
+      function showStatus(msg, type) {
+        const el = document.getElementById("login-status");
+        el.textContent = msg;
+        el.className = type;
+        el.style.display = "block";
+      }
+
+      document.getElementById("login-btn").addEventListener("click", async () => {
+        const btn = document.getElementById("login-btn");
+        const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
+
+        if (!email || !password) {
+          showStatus("Please enter your email and password.", "error");
+          return;
+        }
+
+        btn.disabled = true;
+        showStatus("Verifying credentials...", "loading");
+
         const result = await Auth.login(email, password);
+
         if (result.success) {
-          window.location.href = "gallery.html";
+          showStatus("Login successful! Redirecting...", "success");
+          setTimeout(() => { window.location.href = "gallery.html"; }, 1000);
         } else {
-          const errorEl = document.getElementById("auth-error");
-          errorEl.textContent = result.error;
-          errorEl.style.display = "block";
+          showStatus(result.error || "Invalid credentials.", "error");
+          btn.disabled = false;
         }
       });
     </script>
+
   </body>
 </html>
