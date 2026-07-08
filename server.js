@@ -162,11 +162,21 @@ app.post("/api/requests/:id/complete", upload.single("completedImage"), async (r
     // Compare images with Claude if we have both
     if (req.file && request.artwork.imageId) {
         try {
-            const originalUrl = `https://www.artic.edu/iiif/2/${request.artwork.imageId}/full/,600/0/default.jpg`;
+            const originalUrl = `https://www.artic.edu/iiif/2/${request.artwork.imageId}/full/843,/0/default.jpg`;
 
             // Fetch original from Art Institute
-            const originalRes = await fetch(originalUrl);
-            if (!originalRes.ok) throw new Error("Could not fetch original image");
+            // Referer must match artic.edu or their IIIF server returns 403
+            const originalRes = await fetch(originalUrl, {
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                    "Referer": "https://www.artic.edu/",
+                    "Accept": "image/jpeg,image/*;q=0.9,*/*;q=0.8",
+                },
+                redirect: "follow",
+            });
+            if (!originalRes.ok) {
+                throw new Error(`Original image fetch failed: ${originalRes.status} ${originalRes.statusText} — ${originalUrl}`);
+            }
             const originalBuffer = Buffer.from(await originalRes.arrayBuffer());
             const originalBase64 = originalBuffer.toString("base64");
 
@@ -204,6 +214,7 @@ app.post("/api/requests/:id/complete", upload.single("completedImage"), async (r
             if (match) request.similarityScore = parseFloat(match[0]);
         } catch (err) {
             console.error("Image comparison failed:", err.message);
+            // Commission still saved — comparison is best-effort
         }
     }
 

@@ -261,6 +261,14 @@
         text-transform: uppercase;
         margin-bottom: 2px;
       }
+      .label-plate .plate-contact {
+        display: block;
+        font-size: 0.6rem;
+        letter-spacing: 0.08em;
+        color: var(--cream-dim);
+        opacity: 0.7;
+        margin-bottom: 2px;
+      }
       .label-plate .plate-budget {
         display: inline-block;
         font-size: 0.62rem;
@@ -563,7 +571,7 @@
               : `<span class="status-badge badge-pending">Pending</span>`;
 
             const actionBtn = !isDone
-              ? `<button class="mark-done-btn" data-id="${r.id}" data-title="${r.artwork.title}">Mark as Done</button>`
+              ? `<button class="mark-done-btn" data-id="${r.id}">Mark as Done</button>`
               : "";
 
             const exhibit = document.createElement("div");
@@ -574,6 +582,8 @@
                 <strong>${r.artwork.title}</strong>
                 <span class="plate-artist">${r.artwork.artist || "Unknown"}</span>
                 <span class="plate-viewer">${r.viewer.firstName} ${r.viewer.lastName}</span>
+                <span class="plate-contact">${r.viewer.email}</span>
+                <span class="plate-contact">${r.viewer.phone || "—"}</span>
                 <span class="plate-budget">Budget: $${r.budget}</span><br>
                 ${badge}
                 ${isDone && r.similarityScore != null
@@ -587,7 +597,10 @@
           });
 
           document.querySelectorAll(".mark-done-btn").forEach(btn => {
-            btn.addEventListener("click", () => openModal(btn.dataset.id, btn.dataset.title));
+            btn.addEventListener("click", () => {
+              const title = btn.closest(".label-plate").querySelector("strong").textContent;
+              openModal(btn.dataset.id, title);
+            });
           });
 
           setupProximityDetection();
@@ -622,6 +635,7 @@
         pendingCompleteId = id;
         document.getElementById("done-modal-subtitle").textContent = `"${title}"`;
         document.getElementById("done-image").value = "";
+        document.getElementById("done-submit-btn").disabled = false;
         setModalStatus("", "");
         document.getElementById("done-modal").classList.add("open");
       }

@@ -372,23 +372,68 @@
             <label for="showPassword">Show Passwords</label>
           </div>
 
-      <button type="submit">Submit</button>
+          <button class="submit-btn" id="register-btn">
+            <span>Create Account</span>
+          </button>
 
-    </form>
-  </div>
+          <div id="register-status"></div>
 
-  <script>
-    const showPasswordCheckbox = document.getElementById("showPassword");
-    const passwordField = document.getElementById("password");
-    const confirmPasswordField = document.getElementById("confirmPassword");
+          <p class="login-link">
+            Already a member? <a href="login.html">Sign in here</a>
+          </p>
+        </div>
 
-    showPasswordCheckbox.addEventListener("change", function () {
-      const type = this.checked ? "text" : "password";
+      </div>
+    </div>
 
-      passwordField.type = type;
-      confirmPasswordField.type = type;
-    });
-  </script>
+    <script src="../JS/auth.js"></script>
+    <script>
+      document.getElementById("showPassword").addEventListener("change", function () {
+        const type = this.checked ? "text" : "password";
+        document.getElementById("password").type = type;
+        document.getElementById("confirmPassword").type = type;
+      });
+
+      function showStatus(msg, type) {
+        const el = document.getElementById("register-status");
+        el.textContent = msg;
+        el.className = type;
+        el.style.display = "block";
+      }
+
+      document.getElementById("register-btn").addEventListener("click", async () => {
+        const btn = document.getElementById("register-btn");
+        const firstName = document.getElementById("firstName").value.trim();
+        const lastName  = document.getElementById("lastName").value.trim();
+        const email     = document.getElementById("email").value.trim();
+        const phone     = document.getElementById("phone").value.trim();
+        const password  = document.getElementById("password").value;
+        const confirm   = document.getElementById("confirmPassword").value;
+        const role      = document.querySelector('input[name="role"]:checked').value;
+
+        if (!firstName || !lastName || !email || !password) {
+          showStatus("Please fill in all required fields.", "error");
+          return;
+        }
+        if (password !== confirm) {
+          showStatus("Passwords do not match.", "error");
+          return;
+        }
+
+        btn.disabled = true;
+        showStatus("Creating your account...", "loading");
+
+        const result = await Auth.register(firstName, lastName, email, phone, password, role);
+
+        if (result.success) {
+          showStatus("Account created! Redirecting to sign in...", "success");
+          setTimeout(() => { window.location.href = "login.html"; }, 1000);
+        } else {
+          showStatus(result.error || "Registration failed.", "error");
+          btn.disabled = false;
+        }
+      });
+    </script>
 
   </body>
 </html>

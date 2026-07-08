@@ -1,32 +1,33 @@
 {
   "requests": [
     {
-      "id": "1779624510831",
+      "id": "1779649076090",
       "artwork": {
-        "id": "80607",
-        "title": "Self-Portrait",
-        "artist": "Vincent van Gogh",
-        "imageId": "47c5bcb8-62ef-e5d7-55e7-f5121f409a30"
+        "id": "28067",
+        "title": "The Old Guitarist",
+        "artist": "Pablo Picasso",
+        "imageId": "4e7f3081-179a-af18-8abd-7908a7ae8c4e"
       },
       "viewer": {
-        "firstName": "Karan",
-        "lastName": "Kumar",
-        "email": "karan30375@gmail.com",
-        "phone": "4389698029"
+        "firstName": "Jakub",
+        "lastName": "Dobes",
+        "email": "dobby75@gmail.com",
+        "phone": "4384206967"
       },
-      "budget": "300",
+      "budget": "400",
       "status": "pending",
-      "requestedAt": "2026-05-24T12:08:30.831Z",
+      "requestedAt": "2026-05-24T18:57:56.090Z",
       "completedAt": null,
-      "completedImagePath": null
+      "completedImagePath": null,
+      "similarityScore": null
     },
     {
-      "id": "1779627358194",
+      "id": "1779649091553",
       "artwork": {
-        "id": "20684",
-        "title": "Paris Street; Rainy Day",
-        "artist": "Gustave Caillebotte",
-        "imageId": "f8fd76e9-c396-5678-36ed-6a348c904d27"
+        "id": "6565",
+        "title": "American Gothic",
+        "artist": "Grant Wood",
+        "imageId": "b272df73-a965-ac37-4172-be4e99483637"
       },
       "viewer": {
         "firstName": "Jakub",
@@ -36,17 +37,39 @@
       },
       "budget": "500+",
       "status": "pending",
-      "requestedAt": "2026-05-24T12:55:58.194Z",
+      "requestedAt": "2026-05-24T18:58:11.553Z",
       "completedAt": null,
-      "completedImagePath": null
+      "completedImagePath": null,
+      "similarityScore": null
     },
     {
-      "id": "1779627779368",
+      "id": "1779649118617",
       "artwork": {
-        "id": "89503",
-        "title": "Under the Wave off Kanagawa (Kanagawa oki nami ura), also known as The Great Wave, from the series \"Thirty-Six Views of Mount Fuji (Fugaku sanjurokkei)\"",
-        "artist": "Katsushika Hokusai",
-        "imageId": "2fa24f36-cc26-41b6-4b49-12bba2a6c1c8"
+        "id": "21023",
+        "title": "Buddha Shakyamuni Seated in Meditation (Dhyanamudra)",
+        "artist": "Unknown Artist",
+        "imageId": "0675f9a9-1a7b-c90a-3bb6-7f7be2afb678"
+      },
+      "viewer": {
+        "firstName": "Jakub",
+        "lastName": "Dobes",
+        "email": "dobby75@gmail.com",
+        "phone": "4384206967"
+      },
+      "budget": "50",
+      "status": "completed",
+      "requestedAt": "null",
+      "completedAt": "2026-05-24T19:45:27.191Z",
+      "completedImagePath": "/uploads/b6022e382c1cea205c080c90c58278bd",
+      "similarityScore": 35
+    },
+    {
+      "id": "1779651813734",
+      "artwork": {
+        "id": "151424",
+        "title": "Inventions of the Monsters",
+        "artist": "Salvador Dalí",
+        "imageId": "be9551d4-860f-37a0-1408-086617f1824e"
       },
       "viewer": {
         "firstName": "Karan",
@@ -56,9 +79,10 @@
       },
       "budget": "50",
       "status": "pending",
-      "requestedAt": "2026-05-24T13:02:59.368Z",
+      "requestedAt": "2026-05-24T19:43:33.734Z",
       "completedAt": null,
-      "completedImagePath": null
+      "completedImagePath": null,
+      "similarityScore": null
     }
   ]
 }
